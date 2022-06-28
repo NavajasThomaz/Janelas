@@ -45,6 +45,7 @@ def Priorizar(processos):
 
 
 def Escalonar(tipo, pos_esc, prop_label):
+
     # interface
     prop_label.delete('1.0', END)
 
@@ -135,45 +136,102 @@ def Escalonar(tipo, pos_esc, prop_label):
         # Final do cronometro
         t_f = time.time() - t_f
         prop_label.insert(1.0, f"Type: Prioridade Tipo 2 | Tempo Total: {clock_times * CPU_Clock}ms | Tempo Real: {t_f*1000:.5f}ms\n")
+
+    # Tipo 2: Alternacia
     elif tipo == 2:
 
+        # Cronometro
         t_f = time.time()
+
+        # Auxiliar contagem de vezes que a cpu foi usada
         clock_times = 0
+
+        # Contador de processos finalizados
         count_aux = 0
+
+        # Contador de index
         i = 0
 
+        # Enquanto os aprocessos estão sendo executados
         while 1:
+
+            # Auxiliar contagem de vezes que a cpu foi usada
             pro_clock = int((processos[i])[2])
+
+            # Se o processo precisa de tempo na cpu
             if pro_clock > 0:
+
+                # Recebe o tempo de cpu do processo
                 pro_clock -= int(CPU_Clock)
+
+                # Se o processo menos a fração de cpu for menor que 0
                 if pro_clock - int(CPU_Clock) < 0:
+                    # Armazena a latencia final do processo no index de Tempo de processo do própio
                     pro_clock = -(clock_times*CPU_Clock)
+
+                # cpu utilizada
                 clock_times += 1
+
+                # Atualiza o tempo de cpu do processo
                 (processos[i]).pop(2)
                 (processos[i]).insert(2, str(pro_clock))
+
+                # Tira do inicio e põe no final da lista
                 processos.append(processos[i])
                 processos.pop()
+
+            # Se o processo não precisa de tempo na cpu
             else:
+
+                # Processos finalizados soma 1
                 count_aux += 1
+
+            # Se o index da lista for igual ao seu tamanho
             if i == len(processos)-1:
+
+                # reinicia os contadores
                 count_aux = 0
                 i = 0
+
+            # Se o index da lista não for igual ao seu tamanho
             else:
+
+                # Index da lista passa para o proximo
                 i += 1
+
+            # Se o n° de proc. finalizados for igual ao n° total de processos
             if count_aux == len(processos)-1:
+                # Finaliza a execução dos processos
                 break
+
+        # Inteface
         for processo in processos:
             demo_str += f'Nome: {processo[0]} |PID: {processo[1]} |Prioridade: {processo[3]} |UID: {processo[4]} |qtdeMem: {processo[5]}bytes |Latência: {-int(processo[2])}ms\n\n'
         t_f = time.time() - t_f
         prop_label.insert(1.0,
                       f"Type: Alternacia | Tempo Total: {clock_times * CPU_Clock}ms | Tempo Real: {t_f * 1000:.5f}ms\n")
+
+    # Tipo 3: Loteria
     elif tipo == 3:
+
+        # Cronometro
         t_f = time.time()
+
+        # Organiza os processos em listas por prioridade
         Processos = Priorizar(processos)
+
+        # Auxiliar contagem de vezes que a cpu foi usada
         clock_times = 0
+
+
         h = len(Processos)-1
+
         og2 = []
+
+        # Enquanto os processos estão sendo organizados
         while 1:
+
+            # A lista
             if len(Processos) >= 0:
                 if len(Processos[h]) >= 0:
                     if h == 0 and len(Processos[h]) == 1:
@@ -185,17 +243,32 @@ def Escalonar(tipo, pos_esc, prop_label):
                         sorteado = random.randint(1, len(Processos[h])-1)
                         og2.append((Processos[h])[sorteado])
                         (Processos[h]).pop(sorteado)
+
+        # Roda os processos por prioridade
         for Processo in og2:
+
+            # Recebe o tempo de cpu do processo
             pro_clock = int(Processo[2])
+
+            # Roda enquanto o processo esta na cpu
             executando = True
             while executando:
+
+                # Tempo de cpu do processo subtrai a fração de cpu
                 pro_clock -= int(CPU_Clock)
+
+                # Contador auxiliar soma 1 a cada subtração
                 clock_times += 1
+
+
                 if pro_clock <= 0:
                     executando = False
+
+
             demo_str += f'Nome: {Processo[0]} |PID: {Processo[1]} |Tempo de Execução: {Processo[2]} |Prioridade: {Processo[3]} |UID: {Processo[4]} |qtdeMem: {Processo[5]}bytes |Latência: {clock_times * CPU_Clock}ms\n\n'
         t_f = time.time() - t_f
         prop_label.insert(1.0, f"Type: Loteria | Tempo Total: {clock_times * CPU_Clock}ms | Tempo Real: {t_f*1000:.5f}ms\n")
+
     return pos_esc.insert('1.0', demo_str)
 
 
